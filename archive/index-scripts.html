@@ -1,0 +1,308 @@
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js'></script>
+
+<script type="text/javascript">
+var ctx = document.getElementById('myChart');
+
+  var data1=0.00;
+  var data2=0.00;
+  var data3=0.00;
+  var data4=0.00;
+  var data5=0.00;
+var maxDataPoints =44;  //Max data points
+var myChart = new Chart(ctx, {
+    type: 'line',
+    data: {
+        datasets: [{
+          data: [],
+          label: "Flow Temp 1",
+          borderColor: "#cc0000",
+          borderWidth: 5,
+          fill: false
+          },
+          {
+          data: [],
+          label: "Return Temp 2",
+          borderColor: "#0033cc",
+          borderWidth: 5,
+          fill: false
+        },
+          {
+          data: [],
+          label: "HW Temp 3",
+          borderColor: "#ff8080",
+          fill: false
+        },
+          {
+          data: [],
+          label: "CW Temp 4",
+          borderColor: "#99b3ff",
+          fill: false
+        },
+        {
+          yAxisID: 'Pressure',
+          data: [],
+          label: "Pressure",
+          borderColor: "#000000",
+          fill: false
+        }
+        ]
+      },   // , added
+      options: {
+        tooltips: {
+          mode: 'index',
+          intersect: false
+        },
+        hover: {
+          mode: 'index',
+          intersect: false
+        },
+        scales: {
+              yAxes: [
+              {   
+                  id: 'Temperature',
+                  name: 'Temperature',
+                  scaleLabel: {
+                      display: true,
+                      labelString: 'Temperature'
+                  },
+                  ticks: {
+                      //suggestedMin: 0,
+                      //beginAtZero: true,
+                      min: 0,
+                      suggestedMax: 75,
+                      stepSize: 5
+                  }
+              },
+              {
+                id: 'Pressure',
+                name: 'Pressure', //B
+                type: 'linear',
+                position: 'right',
+                scalePositionLeft: false,
+                min: 0,
+                max: 10, 
+                scaleLabel: {
+                      display: true,
+                      labelString: 'Pressure'
+                  },
+                ticks: {
+                      suggestedMin: 0,
+                      suggestedMax: 6,
+                      stepSize: 0.5
+                  }
+              }
+            ] //dataset ends here
+        } //scales ends here
+ 
+      }  //Data ends here
+    
+});
+
+  function removeData(){
+    myChart.data.labels.shift();
+    myChart.data.datasets[0].data.shift();
+    myChart.data.datasets[1].data.shift();
+    myChart.data.datasets[2].data.shift();
+    myChart.data.datasets[3].data.shift();
+    myChart.data.datasets[4].data.shift();
+  }
+
+function addData(label, data1,data2,data3,data4,data5) {
+    if(myChart.data.labels.length > maxDataPoints) removeData();
+    myChart.data.labels.push(label);
+    myChart.data.datasets[0].data.push(data1);
+    myChart.data.datasets[1].data.push(data2);
+    myChart.data.datasets[2].data.push(data3);
+    myChart.data.datasets[3].data.push(data4);
+    myChart.data.datasets[4].data.push(data5);
+    myChart.update();
+  }
+/*
+//  function addData(chart, label, data,sIndex) {
+      if(chart.data.labels.length > maxDataPoints) removeData();
+      chart.data.labels.push(label);
+      chart.data.datasets[sIndex].data.push(data);
+      //chart.data.datasets.forEach((dataset) => {
+      //    dataset.data.push(data);
+      //});
+      chart.update();
+  }
+*/  
+/*
+//  function removeData(chart) {
+    chart.data.labels.pop();
+    chart.data.datasets.forEach((dataset) => {
+        dataset.data.pop();
+    });
+    chart.update();
+}
+*/
+var labelsNew = ["W"];
+var dataNew = [20.5];
+var fetchdata = document.getElementById('myChart');
+//  for (i = 0; i < 1; i++) {
+//  setTimeout( function timer(){
+//            //addData(myChart,labelsNew,dataNew,0);
+//            //addData(myChart,labelsNew,dataNew,1);
+//      }, i*3000 ); 
+//  }
+</script> 
+
+<script type="text/javascript">
+var secondslast;
+var seconds;
+// Create a client instance
+//client = new Paho.MQTT.Client(location.hostname, Number(location.port), "clientId");
+
+ $(document).ready(function(){
+    $("#btn").click( function() {
+        var url = "http://www.myboiler.com/connect/?serialno=" + $("#text").val();
+        window.open(url,"_self");
+    });
+})
+
+const queryString = window.location.search;
+//console.log(queryString);
+// ?serialno=XXXXXXXXXXX
+const urlParams = new URLSearchParams(queryString);
+const serialno = urlParams.get('serialno');
+//console.log(serialno);
+var basetopic = serialno+'/'
+//console.log(basetopic);
+//var basetopic = 'SN2020064444/';
+
+$(document).ready(function(){
+    $('#serialno').text(basetopic);
+});
+
+
+console.log ("Start MQTT ConnectionMYB");
+
+client = new Paho.MQTT.Client("wss://test.mosquitto.org:8081/","SN2020064444-GH");
+
+// set callback handlers
+client.onConnectionLost = onConnectionLost;
+client.onMessageArrived = onMessageArrived;
+
+// connect the client
+client.connect({onSuccess:onConnect});
+
+// called when the client connects
+function onConnect() {
+  // Once a connection has been made, make a subscription and send a message.
+  console.log("onConnect");
+  client.subscribe(basetopic+"+");
+  //message = new Paho.MQTT.Message("Hello");
+  //message.destinationName = "SN2020064444/message";
+  //client.send(message);
+}
+
+// called when the client loses its connection
+function onConnectionLost(responseObject) {
+  if (responseObject.errorCode !== 0) {
+    console.log("onConnectionLost:"+responseObject.errorMessage);
+    
+    //Try to reconnect after lost connection
+    client.connect({onSuccess:onConnect});
+  }
+}
+
+
+
+// called when a message arrives
+function onMessageArrived(message) {
+  //console.log("onMessageArrived:"+message.payloadString);
+  //console.log("onMessageArrived:"+message.destinationName);
+  /*
+  if (message.destinationName=='SN2020064444/Temp1-Flow'){
+      $(document).ready(function(){
+        $('#Temp1Flow').text(message.payloadString);
+      });
+  }
+  */
+  
+  var today = new Date();
+  //var t = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+  var t = today.toLocaleTimeString();
+  var x = 0;
+  
+  switch (message.destinationName) {
+  case basetopic+'Temp1-Flow':
+      $(document).ready(function(){
+        $('#Temp1Flow').text(message.payloadString);
+      });
+      
+      //addData(myChart,[""],[parseFloat(message.payloadString)],0);
+      data1= parseFloat(message.payloadString);
+      //addData(t,data1,[0]);
+ 
+    break;
+  case basetopic+'Temp2-Return':
+      $(document).ready(function(){
+        $('#Temp2Return').text(message.payloadString);
+      });
+      //addData(myChart,[""],[parseFloat(message.payloadString)],1);
+      data2= parseFloat(message.payloadString);
+      //addData(t,data2,[1]);
+    break;
+  
+  case basetopic+'Temp3-HW':
+      $(document).ready(function(){
+        $('#Temp3HW').text(message.payloadString);
+      });
+      //(myChart,[""],[parseFloat(message.payloadString)],2);
+      data3= parseFloat(message.payloadString);
+      //addData(t,data3,[2]);
+    break;
+    
+  case basetopic+'Temp4-Cold':
+      $(document).ready(function(){
+          $('#Temp4Cold').text(message.payloadString);
+      });
+      //addData(myChart,[""],[parseFloat(message.payloadString)],3);
+      data4= parseFloat(message.payloadString);
+      //addData(t,data4,[3]);
+  break;
+  
+  case basetopic+'pressure':
+      $(document).ready(function(){
+          $('#Pressure').text(message.payloadString);
+      });
+      //addData(myChart,[""],[parseFloat(message.payloadString)],4);
+      data5= parseFloat(message.payloadString);
+      //addData(t,data5,[4]);
+  break;
+  
+  case basetopic+'relay1':
+      $(document).ready(function(){
+          $('#relay1').text(message.payloadString);
+      });
+  break;
+  
+  case basetopic+'timelastseen':
+  $(document).ready(function(){
+      $('#timelastseen').text(message.payloadString);
+  });
+  break;
+  
+  default:
+    //console.log(`Sorry, we are out of ${expr}.`);
+  }
+  
+  //var today = new Date();
+ // var t = today.getHours() + ":" + today.getMinutes() + ":" + today.getSeconds();
+  //addData(t, data1, data2, data3,data4,data5);
+  x = x+1;
+  if (x = 5){
+        if (secondslast!=today.getSeconds()){
+        addData(t, data1, data2, data3,data4,data5);
+        x= 0;
+        }
+        secondslast=today.getSeconds();
+  }
+  //console.log(today.getSeconds());
+  
+}
+</script>

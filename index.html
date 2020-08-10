@@ -1,0 +1,165 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+<title>Boiler Dashboard | MyBoiler.com</title>
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+<link rel="stylesheet" href="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/css/bootstrap.min.css" integrity="sha384-Gn5384xqQ1aoWXA+058RXPxPg6fy4IWvTNh0E263XmFcJlSAwiGgFAW/dAiS6JXm" crossorigin="anonymous">
+<link rel="stylesheet" type="text/css" href="./css/styles.css">
+<script src="https://code.jquery.com/jquery-3.2.1.slim.min.js" integrity="sha384-KJ3o2DKtIkvYIK3UENzmM7KCkRr/rE9/Qpg6aAZGJwFDMVNA/GpGFF93hXpG5KkN" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/popper.js/1.12.9/umd/popper.min.js" integrity="sha384-ApNbgh9B+Y1QKtv3Rn7W3mgPxhU9K/ScQsAP7hUibX39j7fakFPskvXusvfa0b4Q" crossorigin="anonymous"></script>
+<script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.0.0/js/bootstrap.min.js" integrity="sha384-JZR6Spejh4U02d8jOt6vLEHfe/JQGiRRSQQxSfFWpi1MquVdAyjUar5+76PVCmYl" crossorigin="anonymous"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/paho-mqtt/1.0.1/mqttws31.js" type="text/javascript"></script>
+<script src="https://ajax.googleapis.com/ajax/libs/jquery/3.5.1/jquery.min.js"></script>
+<script src='https://cdnjs.cloudflare.com/ajax/libs/Chart.js/2.5.0/Chart.min.js'></script>
+
+
+</head>
+
+<body>
+
+<div class="card">
+	<div class="card-body">
+		<img src="./img/myboiler.svg" class="custom-logo"></img>
+	</div>
+</div>
+
+<button id="goback" onclick="history.back()" class="btn btn-primary">Back</button>
+
+<div class="card">
+	<div class="card-body">
+		<form>
+		<div class="form-group">
+	    	<input type="text" class="form-control" id="SerialNo" name=serialno placeholder="SerialNo">
+	  	</div>
+		<button type="submit" class="btn btn-secondary btn-lg btn-block">Submit</button>
+		</form>
+	</div>
+</div>
+
+<div class="card">
+	<div class="card-body">
+	<table class="table">
+	  <thead>
+	    <tr>
+	      <th scope="col">#</th>
+	      <th scope="col">Item</th>
+	      <th scope="col">Value</th>
+	      <th scope="col">Unit</th>
+	    </tr>
+	  </thead>
+	  <tbody>
+	    <tr>
+	      <th scope="row">1</th>
+	      <td>Serial No</td>
+	      <td><span id="serialno" class=""></span></td>
+	      <td></td>
+	    </tr>
+	    <tr>
+	      <th scope="row">2</th>
+	      <td>Flow Temp</td>
+	      <td><span id="Temp1Flow" class="sensorvalues"></span></td>
+	      <td>°C</td>
+	    </tr>
+		<tr>
+			<th scope="row">3</th>
+			<td>Return Temp</td>
+			<td><span id="Temp2Return" class="sensorvalues"></span></td>
+			<td>°C</td>
+		</tr>
+		<tr>
+			<th scope="row">4</th>
+			<td>Flow Return Delta T Δ</td>
+			<td><span id="tempdiff" class="sensorvalues"></span></td>
+			<td>°C</td>
+		</tr>	
+		<tr>
+			<th scope="row">5</th>
+			<td class="column-1">HW Temp</td>
+			<td><span id="Temp3HW" class="sensorvalues"></span></td>
+			<td>°C</td>
+		</tr>
+		<tr>
+			<th scope="row">6</th>
+			<td>Cold Temp</td>
+			<td><span id="Temp4Cold" class="sensorvalues"></span></td>
+			<td>°C</td>
+		</tr>
+		<tr>
+			<th scope="row">7</th>
+			<td>Pressure</td>
+			<td><span id="Pressure" class="sensorvalues"></span></td>
+			<td>Bar</td>
+		</tr>
+
+		<tr>
+			<th scope="row">8</th>
+			<td>Pressure ADC</td>
+			<td><span id="pressureadc" class="sensorvalues"></span></td>
+			<td>Ratio (0 to 1023)</td>
+		</tr>
+
+		<tr>
+			<th scope="row">9</th>
+			<td>Raw Pressure</td>
+			<td><span id="raw_pressure" class="sensorvalues"></span></td>
+			<td>Ratio (0 to 1)</td>
+		</tr>
+		<tr>
+			<th scope="row">10</th>
+			<td>Pressure Max</td>
+			<td><span id="pressure_range" class="sensorvalues"></span></td>
+			<td>Bar</td>
+		</tr>
+		<tr>
+			<th scope="row">11</th>
+			<td>Calculated Pressure</td>
+			<td><span id="calculated_pressure" class="sensorvalues"></span></td>
+			<td>Bar</td>
+		</tr>
+		<tr>
+			<th scope="row">12</th>
+			<td>Relay 1</td>
+			<td><span id="relay1" class="sensorvalues"></span></td>
+			<td>(1 - On, 0 - Off)</td>
+		</tr>		
+		<tr>
+			<th scope="row">13</th>
+			<td>Last Seen</td>
+			<td><span id="timelastseen" class="sensorvalues"></span></td>
+			<td>(Time)</td>
+		</tr>
+
+	  </tbody>
+	</table>
+	</div>
+</div>
+
+
+<div class="card">
+	<div class="card-body">
+		<canvas id="containerforChart" width="800" height="800"></canvas>
+	</div>
+</div>  
+
+<div class="card">
+	<div class="card-body">
+		<form>
+		  <input type="radio" id="60psi" name="psensorType" value="4.13685">
+		  <label for="60psi">60 psi</label><br>
+		  <input type="radio" id="80psi" name="psensorType" value="5.51581">
+		  <label for="80psi">80 psi</label><br>
+		  <input type="radio" id="100psi" name="psensorType" value="6.89476">
+		  <label for="100psi">100 psi (Default)</label><br>
+		  <input type="radio" id="174psi" name="psensorType" value="12">
+		  <label for="174psi">174.05 psi / 12 Bar</label>
+		</form>
+		<input type="button" class="btn btn-secondary" value="Set Sensor Type">
+	</div>
+</div>
+
+</body>
+</html>
+
+<script src='./js/scripts.js' type="text/javascript"></script>
