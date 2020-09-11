@@ -191,7 +191,8 @@ function makeid(length) {
 
 var clientid = makeid(14);
 console.log(clientid);
-client = new Paho.MQTT.Client("wss://test.mosquitto.org:8081/",clientid);
+//client = new Paho.MQTT.Client("wss://test.mosquitto.org:8081/",clientid);
+client = new Paho.MQTT.Client("wss://mqtt.eclipse.org/mqtt",clientid);
 
 // set callback handlers
 client.onConnectionLost = onConnectionLost;
