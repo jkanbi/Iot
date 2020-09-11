@@ -265,6 +265,9 @@ function onMessageArrived(message) {
       });
       data1= parseFloat(message.payloadString);
       //addData(t,data1,[0]);
+      if (data1 == -127.00){
+        data1 = 0.00
+      }
  
     break;
   case basetopic+'temp2':
@@ -273,6 +276,9 @@ function onMessageArrived(message) {
       });
       data2= parseFloat(message.payloadString);
       //addData(t,data2,[1]);
+      if (data2 == -127.00){
+        data2 = 0.00
+      }
     break;
   
   case basetopic+'temp3':
